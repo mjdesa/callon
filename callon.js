@@ -4,7 +4,7 @@ var data = require('./students');
 //CallOn Object constructor
 function CallOn(obj, opts) {
   this.data = obj
-  this.data.timesCalled = this.data.timesCalled || 1;
+  this.data.timesCalled = this.data.timesCalled;
   this.students = Object.keys(this.data);
   this.options = opts;
 }
@@ -72,29 +72,25 @@ CallOn.prototype.groupsOf = function(groupSize) {
 //Method to determine whether someone should be called on or not
 CallOn.prototype.shouldCallon = function(student) {
   var studentTimesCalled =this.data[student].called; 
-  var totalTimesCalled = this.data.timesCalled;
-  var calledTotal = 1;
-  for (var key in this.data) {
-    if (this.data[key] !== totalTimesCalled) {
-    var called = this.data[key].called;
-    calledTotal += called;
-    }
+  var totalTimesCalled = 0;
+  for (var i in this.data) {
+    totalTimesCalled += this.data[student].called;
   }
-  var average = calledTotal/totalTimesCalled;
-  if (studentTimesCalled/totalTimesCalled < average) {
-    this.data.timesCalled += 1;
-    return true;
-  } else {
-    return false;
-  }
+  var average = totalTimesCalled/this.students.length;
+  console.log(this.students.length-1);
+  console.log("AVERAGE:", average);
+  console.log("STUDENT:", studentTimesCalled);
+  console.log("\n\n\n\n\n");
+  return studentTimesCalled > average;
 };
 
 //returns person as a string
 CallOn.prototype.callon = function() {
   var index = Math.floor(Math.random() * this.students.length);
   var person = this.students[index];
-  if (this.shouldCallon(person)) {
+  if (!this.shouldCallon(person)) {
     //Increment the number of times someone has been called on
+    this.data.timesCalled += 1;
     this.data[person].called += 1;
     this.write();
     return person;
