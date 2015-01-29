@@ -4,6 +4,7 @@ var data = require('./students');
 //CallOn Object constructor
 function CallOn(obj, opts) {
   this.data = obj
+  this.data.timesCalled = this.data.timesCalled || 1;
   this.students = Object.keys(this.data);
   this.options = opts;
 }
@@ -11,6 +12,7 @@ function CallOn(obj, opts) {
 CallOn.prototype.run = function() {
   // TODO: MONITOR STATISTICS RELATED ON WHO'S BEEN CALLED
   //       OR GROUPED TOGETHER.
+  console.log(this.options);
   if (!!this.options) {
     return this.runOpt(this.options[0]);
   } else {
@@ -21,6 +23,7 @@ CallOn.prototype.run = function() {
 CallOn.prototype.runOpt = function(opt) {
   //TODO: ADD STATS OPTION THAT OUTPUTS STATS RELATED TO
   //      THE NUMBER OF TIMES SOMEONE WAS CALLED
+
   switch (opt) {
     case '-groups':
       return this.groupsOf(3);
@@ -66,17 +69,44 @@ CallOn.prototype.groupsOf = function(groupSize) {
   return groups;
 };
 
+//Method to determine whether someone should be called on or not
+CallOn.prototype.shouldCallon = function(student) {
+  var studentTimesCalled =this.data[student].called; 
+  var totalTimesCalled = this.data.timesCalled;
+  var calledTotal = 1;
+  for (var key in this.data) {
+    if (this.data[key] !== totalTimesCalled) {
+    var called = this.data[key].called;
+    calledTotal += called;
+    }
+  }
+  var average = calledTotal/totalTimesCalled;
+  if (studentTimesCalled/totalTimesCalled < average) {
+    this.data.timesCalled += 1;
+    return true;
+  } else {
+    return false;
+  }
+};
+
 //returns person as a string
 CallOn.prototype.callon = function() {
   var index = Math.floor(Math.random() * this.students.length);
   var person = this.students[index];
-
-  return person;
+  if (this.shouldCallon(person)) {
+    //Increment the number of times someone has been called on
+    this.data[person].called += 1;
+    this.write();
+    return person;
+  } else {
+    return this.callon();
+  }
 };
 
 // Class method that saves the file 
-CallOn.write = function() {
+CallOn.prototype.write = function() {
   var file = JSON.stringify(this.data);
+  console.log(file)
   fs.writeFile('students.json', file, function(err) {
     if (err) console.log(err);
     console.log('DONE');
